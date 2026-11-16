@@ -1,5 +1,11 @@
 import type { Element } from "../../../shared/document";
 import { prismVertices } from "../../../shared/geometry";
+import {
+  isSolidLens,
+  solidOutline,
+  validateSolid,
+} from "../../optics/lib/solidLens";
+
 export function DeviceGlyph({
   e,
   selected,
@@ -8,6 +14,7 @@ export function DeviceGlyph({
   selected: boolean;
 }) {
   const color = selected ? "#a7f070" : "#89a3b7";
+  const solidInvalid = isSolidLens(e) && !validateSolid(e).valid;
   return (
     <g>
       {selected && (
@@ -45,6 +52,8 @@ export function DeviceGlyph({
               />
               <path d="M-8 -7 L8 0 -8 7Z" fill="#d7f79b" />
             </>
+          ) : e.kind === "lens" && isSolidLens(e) ? (
+            <SolidLensGlyph e={e} invalid={solidInvalid} />
           ) : e.kind === "lens" ? (
             <path
               d={`M${-e.size / 2} 0 Q0 -22 ${e.size / 2} 0 Q0 22 ${-e.size / 2} 0`}
@@ -90,6 +99,48 @@ export function DeviceGlyph({
         </g>
       )}
       <circle cx={e.x} cy={e.y} r="4" fill={color} />
+    </g>
+  );
+}
+
+function SolidLensGlyph({ e, invalid }: { e: Element; invalid: boolean }) {
+  // 轮廓点在局部坐标中生成；此 group 已旋转到元件方向，直接用局部 (x,y)
+  const local = solidOutline(e, 28);
+  const points = local.map((p) => `${p.x},${p.y}`).join(" ");
+  const stroke = invalid ? "#ff8f7a" : "#80cafa";
+  const fill = invalid ? "#ff8f7a22" : "#8ed9fc30";
+  return (
+    <g>
+      <polygon
+        points={points}
+        fill={fill}
+        stroke={stroke}
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
+      {/* 光轴参考线 */}
+      <line
+        x1={-e.size / 2 - 6}
+        x2={e.size / 2 + 6}
+        y1="0"
+        y2="0"
+        stroke={stroke}
+        strokeWidth=".8"
+        strokeDasharray="4 5"
+        opacity=".55"
+      />
+      {invalid && (
+        <text
+          x="0"
+          y={-e.size / 2 - 10}
+          textAnchor="middle"
+          fill="#ff8f7a"
+          fontSize="11"
+          fontWeight="600"
+        >
+          无效实体
+        </text>
+      )}
     </g>
   );
 }

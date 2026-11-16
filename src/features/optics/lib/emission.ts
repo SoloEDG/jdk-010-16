@@ -9,6 +9,8 @@ export function emit(source: Element) {
       origin: add(source, mul(t, q * source.size)),
       direction: direction(source.angle + q * source.spread),
       power: source.power / count,
+      // 相对光轴的横向距离（带符号），用于在接收屏区分近轴与边缘光线
+      aperture: q * source.size,
     };
   });
 }

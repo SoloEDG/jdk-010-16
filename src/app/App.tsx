@@ -9,10 +9,11 @@ import {
   Move,
   Info,
   FlaskConical,
+  AlertTriangle,
 } from "lucide-react";
 import { CatalogPanel, Inspector, createElement } from "../features/catalog";
 import { Bench, ObjectList, useDocument } from "../features/bench";
-import { useOptics, RayLayer, OpticsControls } from "../features/optics";
+import { useOptics, RayLayer, SpotLayer, OpticsControls } from "../features/optics";
 import { useDetector, DetectorPanel } from "../features/detector";
 import {
   initialDocument,
@@ -134,7 +135,24 @@ export function App() {
                   visible={optics.visible}
                   normals={optics.normals}
                 />
+                <SpotLayer doc={state.doc} result={optics.result} />
               </Bench>
+              {optics.result.warnings.length > 0 && (
+                <div className="warning-strip" role="status">
+                  {optics.result.warnings.slice(0, 3).map((w) => (
+                    <span key={w.code + (w.elementId ?? "")} className="warning-chip">
+                      <AlertTriangle size={12} />
+                      {w.message}
+                      {w.count > 1 ? ` ×${w.count}` : ""}
+                    </span>
+                  ))}
+                  {optics.result.warnings.length > 3 && (
+                    <span className="warning-chip">
+                      另有 {optics.result.warnings.length - 3} 条警告
+                    </span>
+                  )}
+                </div>
+              )}
               <div className="canvas-badge">
                 <MousePointer2 size={13} />
                 选择与拖动
@@ -182,6 +200,9 @@ export function App() {
           <i />
           光路计算已更新
           {optics.result.truncated > 0 ? " · 部分光线达到追迹上限" : ""}
+          {optics.result.warnings.length > 0
+            ? ` · ${optics.result.warnings.reduce((s, w) => s + w.count, 0)} 条物理警告`
+            : ""}
         </span>
         <span>{notice || "所有实验数据保存在你的浏览器中"}</span>
         <button onClick={() => setHelp(!help)}>
@@ -202,8 +223,16 @@ export function App() {
               选择实验任务，达到测量条件时自动完成。保存实验后，刷新可恢复器件布局。
             </p>
             <p className="muted">
-              透镜采用近轴薄透镜模型。棱镜使用带色散的 Snell
-              折射；每条光线最多追迹 32 次。
+              薄透镜为近轴理想模型，边缘光线同样按焦距偏折；实体透镜采用球面解析求交与
+              Snell 折射，区分前表面、后表面与侧壁，含中心厚度与色散材料。
+              全内反射时光线保留在玻璃内，不会强制穿出。每条光线最多追迹 32
+              次、光源最多 41 条采样光线；曲面用解析二次方程求交，显示轮廓为 28
+              段折线，仅影响绘制不影响求交精度。
+            </p>
+            <p className="muted">
+              切换模型不保证参数一一等价：实体透镜的近轴等效焦距仅作参考。
+              无效实体会暂停该透镜求交并给出原因，调整曲率或厚度即可恢复；
+              所有切换都是可撤销操作，撤销后光路恢复为原任务结果。
             </p>
             <button className="save-button" onClick={() => setHelp(false)}>
               开始探索

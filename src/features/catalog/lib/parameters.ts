@@ -1,6 +1,16 @@
-import type { Element } from "../../../shared/document";
+import type { Element, SolidLensSpec } from "../../../shared/document";
+import { effectiveFocalLength, solidSpec, validateSolid } from "../../optics/lib/solidLens";
+import { getMaterial, glassCatalog } from "../../optics/lib/materials";
 export interface Parameter {
   key: keyof Element;
+  label: string;
+  min: number;
+  max: number;
+  step: number;
+  unit: string;
+}
+export interface SolidParameter {
+  key: keyof SolidLensSpec;
   label: string;
   min: number;
   max: number;
@@ -47,7 +57,7 @@ export function parameters(e: Element): Parameter[] {
         unit: "W",
       },
     );
-  if (e.kind === "lens")
+  if (e.kind === "lens" && e.lens?.model !== "solid")
     common.push({
       key: "focal",
       label: "焦距",
@@ -66,4 +76,24 @@ export function parameters(e: Element): Parameter[] {
       unit: "",
     });
   return common;
+}
+
+export const solidParameters: SolidParameter[] = [
+  { key: "r1", label: "前表面曲率 R₁", min: -2000, max: 2000, step: 2, unit: "mm" },
+  { key: "r2", label: "后表面曲率 R₂", min: -2000, max: 2000, step: 2, unit: "mm" },
+  { key: "thickness", label: "中心厚度 t", min: 1, max: 60, step: 0.5, unit: "mm" },
+];
+
+export function solidSummary(e: Element) {
+  const spec = solidSpec(e);
+  const validation = validateSolid(e);
+  const efl = effectiveFocalLength(e);
+  const material = getMaterial(spec.material);
+  return {
+    spec,
+    validation,
+    efl,
+    material,
+    materials: glassCatalog,
+  };
 }

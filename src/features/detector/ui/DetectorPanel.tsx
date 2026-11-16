@@ -75,7 +75,23 @@ export function DetectorPanel({
               {m.count} <em>条</em>
             </strong>
           </div>
+          <div>
+            <small>横向球差 TSA</small>
+            <strong>
+              {m.sphericalAberration.toFixed(2)} <em>mm</em>
+            </strong>
+          </div>
+          <div>
+            <small>E95 包围半径</small>
+            <strong>
+              {m.e95.toFixed(2)} <em>mm</em>
+            </strong>
+          </div>
         </div>
+        <p className="detector-note">
+          横向球差 = 边缘 1/3 与近轴 1/3 光线的平均落点之差；薄透镜理想聚焦时接近
+          0，实体透镜可比较真实球差。
+        </p>
       </div>
     </section>
   );

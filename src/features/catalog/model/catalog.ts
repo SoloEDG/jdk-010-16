@@ -2,7 +2,7 @@ import type { Kind, Element } from "../../../shared/document";
 export const catalog: { kind: Kind; subtitle: string; symbol: string }[] = [
   { kind: "source", subtitle: "平行光束 · 可调波长", symbol: "☀" },
   { kind: "mirror", subtitle: "反射 · 可调角度", symbol: "╱" },
-  { kind: "lens", subtitle: "薄透镜 · 可调焦距", symbol: "◉" },
+  { kind: "lens", subtitle: "薄透镜 / 实体透镜可切换", symbol: "◉" },
   { kind: "prism", subtitle: "折射 · 色散模型", symbol: "△" },
   { kind: "screen", subtitle: "捕获光束 · 能量分析", symbol: "▥" },
 ];
